@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目管理系统 - 用户登录</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 统一的 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1a56db',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        background: '#f3f4f6',
+                        card: '#ffffff',
+                        text: {
+                            primary: '#111827',
+                            secondary: '#6b7280'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .login-bg {
+                background: linear-gradient(135deg, #1a56db 0%, #3b82f6 100%);
+            }
+            .form-input:focus {
+                border-color: theme('colors.primary');
+                ring-color: theme('colors.primary');
+            }
+            .btn-loading {
+                position: relative;
+                pointer-events: none;
+                opacity: 0.7;
+            }
+            .btn-loading::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 16px;
+                height: 16px;
+                margin: -8px 0 0 -8px;
+                border: 2px solid transparent;
+                border-top-color: currentColor;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+            }
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- 登录卡片 -->
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden card-shadow">
+            <!-- 头部 -->
+            <div class="login-bg p-6 text-center">
+                <h1 class="text-2xl font-bold text-white mb-2">项目管理系统</h1>
+                <p class="text-blue-100">多用户协作版</p>
+            </div>
+            
+            <!-- 登录表单 -->
+            <div class="p-8">
+                <form id="loginForm" class="space-y-6">
+                    <!-- 用户名 -->
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-text-secondary mb-2">
+                            用户名
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-text-secondary">
+                                <i class="fa fa-user"></i>
+                            </span>
+                            <input type="text" id="username" name="username" 
+                                   class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" 
+                                   placeholder="请输入用户名" required>
+                        </div>
+                    </div>
+                    
+                    <!-- 密码 -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-text-secondary mb-2">
+                            密码
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-text-secondary">
+                                <i class="fa fa-lock"></i>
+                            </span>
+                            <input type="password" id="password" name="password" 
+                                   class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" 
+                                   placeholder="请输入密码" required>
+                            <button type="button" id="togglePassword" 
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-text-secondary hover:text-text-primary">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 记住我 -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="remember" name="remember" 
+                                   class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                            <label for="remember" class="ml-2 block text-sm text-text-secondary">
+                                记住我
+                            </label>
+                        </div>
+                        <a href="#" class="text-sm text-primary hover:text-blue-700">
+                            忘记密码?
+                        </a>
+                    </div>
+                    
+                    <!-- 登录按钮 -->
+                    <div>
+                        <button type="submit" id="loginBtn" 
+                                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all-300">
+                            登录
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- 错误提示 -->
+                <div id="errorMessage" class="mt-4 hidden">
+                    <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+                        <i class="fa fa-exclamation-circle mr-2"></i>
+                        <span id="errorText"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 底部 -->
+            <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 text-center">
+                <p class="text-sm text-text-secondary">
+                    © 2024 项目管理系统 - 多用户协作版
+                </p>
+            </div>
+        </div>
+        
+        <!-- 快速登录提示 -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+            <p class="text-sm text-blue-600">
+                <i class="fa fa-info-circle mr-2"></i>
+                演示账号：admin / demo / user1 - 密码：123456
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const loginBtn = document.getElementById('loginBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            
+            // 切换密码可见性
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                togglePassword.innerHTML = type === 'password' ? '<i class="fa fa-eye"></i>' : '<i class="fa fa-eye-slash"></i>';
+            });
+            
+            // 登录表单提交
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                const remember = document.getElementById('remember').checked;
+                
+                // 清除之前的错误
+                errorMessage.classList.add('hidden');
+                
+                // 简单验证
+                if (!username || !password) {
+                    showError('请输入用户名和密码');
+                    return;
+                }
+                
+                // 显示加载状态
+                loginBtn.classList.add('btn-loading');
+                loginBtn.disabled = true;
+                
+                // 模拟登录请求
+                setTimeout(() => {
+                    try {
+                        // 模拟用户认证
+                        const user = authenticateUser(username, password);
+                        
+                        if (user) {
+                            // 保存用户信息
+                            saveUserSession(user, remember);
+                            
+                            // 跳转到首页
+                            window.location.href = 'index.html';
+                        } else {
+                            showError('用户名或密码错误');
+                        }
+                    } catch (error) {
+                        showError('登录失败，请重试');
+                        console.error('Login error:', error);
+                    } finally {
+                        // 恢复按钮状态
+                        loginBtn.classList.remove('btn-loading');
+                        loginBtn.disabled = false;
+                    }
+                }, 1000);
+            });
+            
+            // 模拟用户认证
+            function authenticateUser(username, password) {
+                // 演示用户
+                const demoUsers = [
+                    { id: '1', username: 'admin', password: '123456', name: '系统管理员', role: 'admin' },
+                    { id: '2', username: 'demo', password: '123456', name: '演示用户', role: 'user' },
+                    { id: '3', username: 'user1', password: '123456', name: '用户一', role: 'user' }
+                ];
+                
+                return demoUsers.find(user => user.username === username && user.password === password);
+            }
+            
+            // 保存用户会话
+            function saveUserSession(user, remember) {
+                const token = generateJWT(user);
+                const sessionData = {
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        name: user.name,
+                        role: user.role
+                    },
+                    token: token,
+                    expires: new Date(Date.now() + (remember ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000)) // 记住我7天，否则1天
+                };
+                
+                localStorage.setItem('userSession', JSON.stringify(sessionData));
+            }
+            
+            // 生成模拟JWT令牌
+            function generateJWT(user) {
+                const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+                const payload = btoa(JSON.stringify({
+                    sub: user.id,
+                    username: user.username,
+                    role: user.role,
+                    iat: Date.now(),
+                    exp: Date.now() + 7 * 24 * 60 * 60 * 1000
+                }));
+                const signature = btoa('mock-signature-' + user.id);
+                return `${header}.${payload}.${signature}`;
+            }
+            
+            // 显示错误信息
+            function showError(message) {
+                errorText.textContent = message;
+                errorMessage.classList.remove('hidden');
+                errorMessage.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // 检查是否已登录
+            checkLoginStatus();
+        });
+        
+        // 检查登录状态
+        function checkLoginStatus() {
+            const session = localStorage.getItem('userSession');
+            if (session) {
+                try {
+                    const sessionData = JSON.parse(session);
+                    const expires = new Date(sessionData.expires);
+                    
+                    if (expires > new Date()) {
+                        // 已登录，跳转到首页
+                        window.location.href = 'index.html';
+                    } else {
+                        // 会话过期，清除
+                        localStorage.removeItem('userSession');
+                    }
+                } catch (error) {
+                    localStorage.removeItem('userSession');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
